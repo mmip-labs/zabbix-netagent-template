@@ -1,0 +1,1047 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 563ed06b8df049d0966d5d4ec2ca8d9b
+      name: UserTemplates
+  templates:
+    - uuid: 8a25ffacf41f4cd5a9c4bc805f8362f8
+      template: 'UPS Net AgentA by SNMP'
+      name: 'UPS Net AgentA by SNMP'
+      description: |
+        Zabbix template for NetAgentA smart module for UPS.
+        
+        By Aleksey Kuznetsov, ljflats@gmail.com
+        
+        Version 2.0
+      groups:
+        - name: UserTemplates
+      items:
+        - uuid: de0178ae8ed74f0e8aa22a2fc25e7d5b
+          name: upsBaseBatteryStatus
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.1.1.0
+          key: battery.upsBaseBatteryStatus
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'The status of the UPS batteries.  A batteryLow(3) value indicates the UPS will be unable to sustain the current load, and its services will be lost if power is not restored.  The amount of run time in reserve at the time of low battery can be configured by the upsSmartConfigLowBatteryRunTime.'
+          valuemap:
+            name: BatteryStatus
+          tags:
+            - tag: component
+              value: battery
+        - uuid: e2a7e3da1a0f4191af22897048ffced1
+          name: upsBaseBatteryTimeOnBattery
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.1.2.0
+          key: battery.upsBaseBatteryTimeOnBattery
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: s
+          description: 'The elapsed time in seconds since the UPS has switched to battery power.'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: 52b4bf8a863745af8c5c12593dc29711
+          name: upsSmartBatteryCapacity
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.1.0
+          key: battery.upsSmartBatteryCapacity
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: '%'
+          description: 'The remaining battery capacity expressed in percent of full capacity.'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: a69cd25e895d44d2ad1f21d5a1b0aad5
+              expression: 'avg(/UPS Net AgentA by SNMP/battery.upsSmartBatteryCapacity,#3)<={$BATTERY.CAPACITY.MIN.WARN}'
+              name: 'Low Battery Capacity'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: b7c9de068da04c448a3d1bb2886d82da
+          name: upsSmartBatteryCurrent
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.7.0
+          key: battery.upsSmartBatteryCurrent
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: '%'
+          description: 'The current battery current expressed in percent of maximum current.'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: a2400fbd627e411fa09983df51b39d02
+          name: upsSmartBatteryFullChargeVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.6.0
+          key: battery.upsSmartBatteryFullChargeVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The fully charged battery voltage of the battery system used in the UPS, expressed in tenths of a volt.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: ab252658f883485d80f2173e431a205d
+          name: upsSmartBatteryReplaceIndicator
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.5.0
+          key: battery.upsSmartBatteryReplaceIndicator
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'Indicates whether the UPS batteries need replacing.'
+          valuemap:
+            name: SmartBatteryReplaceIndicator
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: db11fe9cc54e47949dfb0b47febf478b
+              expression: 'last(/UPS Net AgentA by SNMP/battery.upsSmartBatteryReplaceIndicator)=2'
+              name: 'Battery needs replacing'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: d3df9d6b68b04eababd1f9613b7f9ef4
+          name: upsSmartBatteryRunTimeRemaining
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.4.0
+          key: battery.upsSmartBatteryRunTimeRemaining
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: s
+          description: 'The UPS battery run time remaining before battery exhaustion, in seconds.'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: 41aa17fe86834aee9d92fa561ca6b8b1
+          name: upsSmartBatteryTemperature
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.3.0
+          key: battery.upsSmartBatteryTemperature
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: C
+          description: 'The current internal UPS temperature expressed in tenths of a Celsius degree.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: feac689f2f4b4b99a75c60dbca3cba56
+              expression: 'avg(/UPS Net AgentA by SNMP/battery.upsSmartBatteryTemperature,#3)>={$BATTERY.TEMP.MAX.WARN}'
+              name: 'High Battery Temperature'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: a85995b75dfe4214936c50c1ca4c56e7
+          name: upsSmartBatteryVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.2.2.2.0
+          key: battery.upsSmartBatteryVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The current battery voltage expressed in 1/10 VDC.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: battery
+          triggers:
+            - uuid: 019c6161c5ce4e91afbcd1466cc4aa5e
+              expression: 'avg(/UPS Net AgentA by SNMP/battery.upsSmartBatteryVoltage,#3)>={$UPS.BATTERY_CHARGE.WARN}'
+              name: 'High Battery Charge'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: b10f0b96de7144729b24703d175b78c2
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          history: 7d
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: caf17a49ab874e119c65b7333eaede1e
+              expression: 'max(/UPS Net AgentA by SNMP/icmpping,#3)=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: fac2b6c36b914a4a96dc092d45faabe8
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 68ae41df5bd4495b81d0226150c8244c
+              expression: 'min(/UPS Net AgentA by SNMP/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/UPS Net AgentA by SNMP/icmppingloss,5m)<100'
+              name: 'High ICMP ping loss'
+              opdata: 'Loss: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/UPS Net AgentA by SNMP/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 68fc88b00e2549d2802bbe3fba535f1f
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          history: 7d
+          value_type: FLOAT
+          units: ms
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1000'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: bb88388020944235aa12c0c0a6f719f9
+              expression: 'avg(/UPS Net AgentA by SNMP/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                - name: 'High ICMP ping loss'
+                  expression: 'min(/UPS Net AgentA by SNMP/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/UPS Net AgentA by SNMP/icmppingloss,5m)<100'
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/UPS Net AgentA by SNMP/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 9fb16587bf7a40de9e46448136fdc717
+          name: upsBaseInputPhase
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.1.1.0
+          key: input.upsBaseInputPhase
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'The current AC input phase.'
+          tags:
+            - tag: component
+              value: battery
+        - uuid: 9147870d88334fad809120b355b9412d
+          name: upsSmartInputFrequency
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.2.4.0
+          key: input.upsSmartInputFrequency
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: Hz
+          description: 'The current input frequency to the UPS system in 1/10 Hz.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+          triggers:
+            - uuid: da133048bc054a46b7271fb7a3e8cbee
+              expression: 'avg(/UPS Net AgentA by SNMP/input.upsSmartInputFrequency,#3)>={$UPS.INPUT_FREQ.MAX.WARN}'
+              name: 'High Input Frequency'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 2b29705f9db142dc82ea06e6ce1f4152
+              expression: 'avg(/UPS Net AgentA by SNMP/input.upsSmartInputFrequency,#3)<={$UPS.INPUT_FREQ.MIN.WARN}'
+              name: 'Low Input Frequency'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 037ebac63fc44d30bbf6d79ce400d0b0
+          name: upsSmartInputLineFailCause
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.2.5.0
+          key: input.upsSmartInputLineFailCause
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'The reason for the occurrence of the last transfer to UPS battery power.  The variable is set to noTransfer(1) if there is no transfer yet.   The variable is set to highLineVoltage(2) if the transfer to battery is caused by an over voltage greater than the high transfer voltage. The variable is set to brownout(3) if the duration of the outage is greater than five seconds and the line voltage is between 40 percent of the rated output voltage and the low transfer voltage. The variable is set to blackout(4) if the duration of the outage is greater than five seconds and the line voltage is between 40 percent of the rated output voltage and ground.  The variable is set to smallMomentarySag(5) if the duration of the outage is less than five seconds and the line voltage is between 40 percent of the rated output voltage and the low transfer voltage.  The variable is set to deepMomentarySag(6) if the duration of the outage is less than five seconds and the line voltage is between 40 percent of the rated output voltage and ground.'
+          valuemap:
+            name: LineFailCause
+          tags:
+            - tag: component
+              value: input
+          triggers:
+            - uuid: f4ecc99b823c4281bb4e2a37f87ddd39
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=4'
+              name: 'UPS transfer to the battery power due to blackout'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 23f281eb0ca84ce2adb701a1df071335
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=3'
+              name: 'UPS transfer to the battery power due to brownout'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 93e2d993f8254238bf6fa5c5379d70ef
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=6'
+              name: 'UPS transfer to the battery power due to deep Momentary Sag'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: d2b96c5666de47d0ac62a4f40a3bf623
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=2'
+              name: 'UPS transfer to the battery power due to high Line Voltage'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 66a6ed3e9e274ebfb61fac5847c8749c
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=8'
+              name: 'UPS transfer to the battery power due to large Momentary Spike'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 652f678a563d48cbaccb0696804d63f8
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=5'
+              name: 'UPS transfer to the battery power due to small Momentary Sag'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: b674b9fcefe54aba8902bd3ab61d923a
+              expression: 'last(/UPS Net AgentA by SNMP/input.upsSmartInputLineFailCause)=7'
+              name: 'UPS transfer to the battery power due to small Momentary Spike'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 734af0fde9d14159b5a7f3c0bb34fe59
+          name: upsSmartInputLineVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.2.1.0
+          key: input.upsSmartInputLineVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The current utility line voltage in 1/10 VAC.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+          triggers:
+            - uuid: 295d0b260eee4d6d9718e01f74d07b27
+              expression: 'avg(/UPS Net AgentA by SNMP/input.upsSmartInputLineVoltage,#3)>={$UPS.INPUT_VOLT.MAX.WARN}'
+              name: 'High Input Voltage'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 855a6320ed2741909f0ba37686184fd6
+              expression: 'avg(/UPS Net AgentA by SNMP/input.upsSmartInputLineVoltage,#3)<={$UPS.INPUT_VOLT.MIN.WARN}'
+              name: 'Low Input Voltage'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 783225ff26c24252a59c1d26c8d1d8d7
+          name: upsSmartInputMaxLineVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.2.2.0
+          key: input.upsSmartInputMaxLineVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The maximum utility line voltage in 1/10 VAC over the previous 1 minute period.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+        - uuid: 10b7f0fc19ba4114a544dfb3b4d7cb8c
+          name: upsSmartInputMinLineVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.3.2.3.0
+          key: input.upsSmartInputMinLineVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The minimum utility line voltage in 1/10 VAC over the previous 1 minute period.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: input
+        - uuid: 03ba8fd8e01a488fa09dd4244f09f085
+          name: upsBaseOutputPhase
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.4.1.2.0
+          key: output.upsBaseOutputPhase
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'The current output phase.'
+          tags:
+            - tag: component
+              value: output
+        - uuid: 35246cbc6a604636aeb978f27d1bf587
+          name: upsBaseOutputStatus
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.4.1.1.0
+          key: output.upsBaseOutputStatus
+          delay: 3m
+          history: 2w
+          trends: '0'
+          description: 'The current state of the UPS.  If the UPS is unable to determine the state of the UPS this variable is set to unknown(1).'
+          valuemap:
+            name: OutputStatus
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: 77109ee441b6472888771b8ba8b8f1f1
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=3'
+              name: 'UPS state is on battery'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 45fa7c57bb594536ac9f1f8c8306d489
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=4'
+              name: 'UPS state is on boost'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 256dd4d386d849bcade1bfde69e759c4
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=9'
+              name: 'UPS state is on buck'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: a76f6d5aac7f4c319e1fbaecf2afe6bb
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=6'
+              name: 'UPS state is on bypass'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: da8a258febd7408e9872e3ee588e0838
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=7'
+              name: 'UPS state is rebooting'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: ba684875c92b4263bb32e3b2f1dcfd76
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=5'
+              name: 'UPS state is sleeping'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: d2e3ad877d7d43e68302ea0562fd7c1f
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=8'
+              name: 'UPS state is standby'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: d9258c2913444f8e9e32820e5f191aa7
+              expression: 'last(/UPS Net AgentA by SNMP/output.upsBaseOutputStatus)=1'
+              name: 'UPS state is unknown'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: HIGH
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 29de24fcb4284b87beb57a45743e6acd
+          name: upsSmartOutputFrequency
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.4.2.2.0
+          key: output.upsSmartOutputFrequency
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: Hz
+          description: 'The current output frequency of the UPS system in 1/10 Hz.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: 9a3f5cad749a4febae04e667def7a5d1
+              expression: 'avg(/UPS Net AgentA by SNMP/output.upsSmartOutputFrequency,#3)>={$UPS.OUTPUT_FREQ.MAX.WARN}'
+              name: 'High Output Frequency'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 57c12bd85f0344b1961d8848d9564f16
+              expression: 'avg(/UPS Net AgentA by SNMP/output.upsSmartOutputFrequency,#3)<={$UPS.OUTPUT_FREQ.MIN.WARN}'
+              name: 'Low Output Frequency'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: cc4e59333ca34ba1917e871ddaad7c97
+          name: upsSmartOutputLoad
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.4.2.3.0
+          key: output.upsSmartOutputLoad
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: '%'
+          description: 'The current UPS load expressed in percent of rated capacity.'
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: 688a6ef07caa48ca9fac32101b31a405
+              expression: 'avg(/UPS Net AgentA by SNMP/output.upsSmartOutputLoad,#3)>={$UPS.OUTPUT.MAX.WARN}'
+              name: 'High Output Load'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 6eef7ed38ccd456ea71fe93cf5318751
+          name: upsSmartOutputVoltage
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.935.1.1.1.4.2.1.0
+          key: output.upsSmartOutputVoltage
+          delay: 3m
+          history: 2w
+          value_type: FLOAT
+          trends: '0'
+          units: V
+          description: 'The output voltage of the UPS system in 1/10 VAC.'
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: output
+          triggers:
+            - uuid: 60f59e6f559d4331a3689c9c52e2d2e4
+              expression: 'avg(/UPS Net AgentA by SNMP/output.upsSmartOutputVoltage,#3)>={$UPS.OUTPUT_VOLT.MAX.WARN}'
+              name: 'High Output Voltage'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+            - uuid: 80113921275749248f2acec4529f9bf9
+              expression: 'avg(/UPS Net AgentA by SNMP/output.upsSmartOutputVoltage,#3)<={$UPS.OUTPUT_VOLT.MIN.WARN}'
+              name: 'Low Output Voltage'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 1548237120ab43db83c733a0b71e8094
+          name: 'SNMP traps'
+          type: SNMP_TRAP
+          key: 'snmptrap[alarm=.*]'
+          delay: '0'
+          history: 90d
+          value_type: LOG
+          trends: '0'
+          description: 'Перехватывает сообщения от роутеров Cisco ASR9006'
+          logtimefmt: 'hh:mm:sszyyyy/MM/dd'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'alarm=.*'
+                - \0
+          triggers:
+            - uuid: 8daba3924f394fe3867f0397510179a5
+              expression: 'count(/UPS Net AgentA by SNMP/snmptrap[alarm=.*],{$ALARM_CHECK_INTERVAL},"regexp","alarm=.*") > 0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'nodata(/UPS Net AgentA by SNMP/snmptrap[alarm=.*],{$ALARM_CLEAR_TIMEOUT})=1'
+              name: '{{ITEM.VALUE}.iregsub("alarm=(.*)", "\1")}'
+              opdata: '{{ITEM.VALUE}.iregsub("alarm=(.*)", "\1")}'
+              priority: AVERAGE
+              description: '{{ITEM.VALUE}.iregsub("alarm=(.*)", "\1")}'
+              type: MULTIPLE
+              manual_close: 'YES'
+              tags:
+                - tag: HOST
+                  value: '{HOST.CONN}'
+        - uuid: fd76504d4f344c0ea21baed19434538a
+          name: 'System contact details'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.4.0
+          key: 'system.contact[sysContact.0]'
+          delay: 1h
+          history: 2w
+          value_type: CHAR
+          trends: '0'
+          description: |
+            MIB: SNMPv2-MIB
+            The textual identification of the contact person for this managed
+            node, together with information on how to contact this person.  If no contact
+            information is known, the value is the zero-length string.
+          inventory_link: CONTACT
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            - tag: component
+              value: system
+        - uuid: bd34c9de9e614fdfbc3c30e3f190fc91
+          name: 'System description'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: 'system.descr[sysDescr.0]'
+          delay: 1h
+          history: 2w
+          value_type: CHAR
+          trends: '0'
+          description: |
+            MIB: SNMPv2-MIB
+            A textual description of the entity. This value should
+            include the full name and version identification of the system's hardware type, software operating-system, and
+            networking software.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 1feff8f3e5e74244b0bd33b409edbe7f
+          name: 'Uptime (hardware)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.1.1.0
+          key: 'system.hw.uptime[hrSystemUptime.0]'
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: HOST-RESOURCES-MIB
+            The amount of time since this host was last initialized.
+            Note that this is different from sysUpTime in the SNMPv2-MIB
+            [RFC1907] because sysUpTime is the uptime of the
+            network management portion of the system.
+          preprocessing:
+            - type: CHECK_NOT_SUPPORTED
+              parameters:
+                - '-1'
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: system
+        - uuid: 41d4624c4311476881293738282caeee
+          name: 'System location'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.6.0
+          key: 'system.location[sysLocation.0]'
+          delay: 1h
+          history: 2w
+          value_type: CHAR
+          trends: '0'
+          description: |
+            MIB: SNMPv2-MIB
+            The physical location of this node (e.g., `telephone closet,
+            3rd floor').  If the location is unknown, the value is the zero-length string.
+          inventory_link: LOCATION
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          tags:
+            - tag: component
+              value: system
+        - uuid: c2df639a76224e09ab0a19ea2fa09ed2
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: 'system.name[sysName.0]'
+          delay: 1h
+          history: 2w
+          value_type: CHAR
+          trends: '0'
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By
+            convention, this is the node's fully-qualified domain name.  If the name is unknown,
+            the value is the zero-length string.
+          inventory_link: NAME
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: e10b110d6a5a486791e6fb8bead0c543
+              expression: 'last(/UPS Net AgentA by SNMP/system.name[sysName.0],#1)<>last(/UPS Net AgentA by SNMP/system.name[sysName.0],#2) and length(last(/UPS Net AgentA by SNMP/system.name[sysName.0]))>0'
+              name: 'System name has changed'
+              event_name: 'System name has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: 'System name has changed. Ack to close.'
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: notice
+                - tag: scope
+                  value: security
+        - uuid: 6f0a5f4aae2f4952bb0296fa73eca0da
+          name: 'Uptime (network)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: 'system.net.uptime[sysUpTime.0]'
+          delay: 3m
+          history: 2w
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            The time (in hundredths of a second) since the network management
+            portion of the system was last re-initialized.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: system
+        - uuid: 8c5b1c7d40e54ae88f379e0678b0bd67
+          name: 'System object ID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: 'system.objectid[sysObjectID.0]'
+          delay: 1h
+          history: 2w
+          value_type: CHAR
+          trends: '0'
+          description: |
+            MIB: SNMPv2-MIB
+            The vendor's authoritative identification of the network management
+            subsystem contained in the entity.  This value is allocated within the SMI enterprises
+            subtree (1.3.6.1.4.1) and provides an easy and unambiguous means for determining`what
+            kind of box' is being managed.  For example, if vendor`Flintstones, Inc.' was
+            assigned the subtree1.3.6.1.4.1.4242, it could assign the identifier 1.3.6.1.4.1.4242.1.1
+            to its `Fred Router'.
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          tags:
+            - tag: component
+              value: system
+        - uuid: 302c114b3f404fc790ee05c1ef423cce
+          name: 'SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          delay: 3m
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 6h
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: ac293e932a904793aba3d3b606042fc1
+              expression: 'max(/UPS Net AgentA by SNMP/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              opdata: 'Current state: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'SNMP is not available for polling. Please check device connectivity and SNMP settings.'
+              tags:
+                - tag: scope
+                  value: availability
+      tags:
+        - tag: class
+          value: power
+        - tag: target
+          value: megatec
+        - tag: target
+          value: net-agent-a
+      macros:
+        - macro: '{$ALARM_CHECK_INTERVAL}'
+          value: 1m
+        - macro: '{$ALARM_CLEAR_TIMEOUT}'
+          value: 5m
+        - macro: '{$BATTERY.CAPACITY.MIN.WARN}'
+          value: '50'
+          description: 'Minimum battery capacity percentage for trigger expression.'
+        - macro: '{$BATTERY.TEMP.MAX.WARN}'
+          value: '55'
+          description: 'Maximum battery temperature for trigger expression.'
+        - macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        - macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '150'
+        - macro: '{$SNMP.TIMEOUT}'
+          value: 5m
+          description: 'The time interval for SNMP agent availability trigger expression.'
+        - macro: '{$SNMP_COMMUNITY}'
+          value: kqerfbn
+        - macro: '{$UPS.BATTERY_CHARGE.WARN}'
+          value: '5.0'
+        - macro: '{$UPS.INPUT_FREQ.MAX.WARN}'
+          value: '50.3'
+          description: 'Maximum input frequency for trigger expression.'
+        - macro: '{$UPS.INPUT_FREQ.MIN.WARN}'
+          value: '49.7'
+          description: 'Minimum input frequency for trigger expression.'
+        - macro: '{$UPS.INPUT_VOLT.MAX.WARN}'
+          value: '243'
+          description: 'Maximum input voltage for trigger expression.'
+        - macro: '{$UPS.INPUT_VOLT.MIN.WARN}'
+          value: '197'
+          description: 'Minimum input voltage for trigger expression.'
+        - macro: '{$UPS.OUTPUT.MAX.WARN}'
+          value: '80'
+          description: 'Maximum output load in % for trigger expression.'
+        - macro: '{$UPS.OUTPUT_FREQ.MAX.WARN}'
+          value: '50.3'
+        - macro: '{$UPS.OUTPUT_FREQ.MIN.WARN}'
+          value: '49.7'
+        - macro: '{$UPS.OUTPUT_VOLT.MAX.WARN}'
+          value: '243'
+        - macro: '{$UPS.OUTPUT_VOLT.MIN.WARN}'
+          value: '197'
+      valuemaps:
+        - uuid: 83f14d0174574806b098686187342751
+          name: BatteryStatus
+          mappings:
+            - value: '1'
+              newvalue: Unknown
+            - value: '2'
+              newvalue: Normal
+            - value: '3'
+              newvalue: Low
+        - uuid: e5758fb06b7f442990234550ff20f780
+          name: LineFailCause
+          mappings:
+            - value: '1'
+              newvalue: noTransfer
+            - value: '2'
+              newvalue: highLineVoltage
+            - value: '3'
+              newvalue: brownout
+            - value: '4'
+              newvalue: blackout
+            - value: '5'
+              newvalue: smallMomentarySag
+            - value: '6'
+              newvalue: deepMomentarySag
+            - value: '7'
+              newvalue: smallMomentarySpike
+            - value: '8'
+              newvalue: largeMomentarySpike
+        - uuid: cffba05def4d48439b0a01f047caa46d
+          name: OutputStatus
+          mappings:
+            - value: '1'
+              newvalue: unknown
+            - value: '2'
+              newvalue: onLine
+            - value: '3'
+              newvalue: onBattery
+            - value: '4'
+              newvalue: onBoost
+            - value: '5'
+              newvalue: sleeping
+            - value: '6'
+              newvalue: onBypass
+            - value: '7'
+              newvalue: rebooting
+            - value: '8'
+              newvalue: standBy
+            - value: '9'
+              newvalue: onBuck
+        - uuid: 07d45a3a370f4138804bdee5d42946ca
+          name: SmartBatteryReplaceIndicator
+          mappings:
+            - value: '0'
+              newvalue: OK
+            - value: '1'
+              newvalue: 'No Needs Replacing'
+            - value: '2'
+              newvalue: 'Needs Replacing'
+  triggers:
+    - uuid: 691ee9329bae44928c8e7362fa644268
+      expression: '(last(/UPS Net AgentA by SNMP/system.hw.uptime[hrSystemUptime.0])>0 and last(/UPS Net AgentA by SNMP/system.hw.uptime[hrSystemUptime.0])<10m) or (last(/UPS Net AgentA by SNMP/system.hw.uptime[hrSystemUptime.0])=0 and last(/UPS Net AgentA by SNMP/system.net.uptime[sysUpTime.0])<10m)'
+      name: 'Host has been restarted'
+      event_name: '{HOST.NAME} has been restarted (uptime < 10m)'
+      priority: WARNING
+      description: 'Uptime is less than 10 minutes.'
+      manual_close: 'YES'
+      dependencies:
+        - name: 'No SNMP data collection'
+          expression: 'max(/UPS Net AgentA by SNMP/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+      tags:
+        - tag: scope
+          value: notice
